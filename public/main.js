@@ -9,7 +9,7 @@ const P = {
   size:    4,
   opacity: 0.65,
   jitter:  5,
-  speed:   100,
+  speed:   140,
 };
 
 const SAMPLE = 2; // pixel stride — lower = more particles (slower)

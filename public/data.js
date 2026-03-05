@@ -206,13 +206,144 @@ lnTabs.forEach(function(tab) {
   });
 });
 
-// Submit button (placeholder — will connect to neDB later)
-document.getElementById('btn-submit').addEventListener('click', function() {
-  alert('Submit Your Data — coming soon. This will connect to neDB.');
-});
+// Submit button — handled by form logic below
 
 /* ══════════════════════════════════════════════════════════════
    INIT
    ══════════════════════════════════════════════════════════════ */
 loadPieImage();
 animate();
+/* ══════════════════════════════════════════════════════════════
+   SUBMIT YOUR DATA — Form + Analysis + Results
+   ══════════════════════════════════════════════════════════════ */
+
+var DRINK_CATS = [
+  { label: 'NON-DRINKER', range: '0 DAYS', min: 0, max: 0,
+    mood: 'MOOD DISTRESS', k6: 'K6 SCORE', sleep: 'SLEEP TROUBLE', gm: 'GREY MATTER',
+    moodImg: 'assets/distress/distressCT0.png',
+    k6Img:   'assets/k6/Layer 10.jpg',
+    sleepImg:'assets/sleep/sleepCT0.png',
+    gmImg:   'assets/grey/greyCT0.png',
+    quote: 'Zero drinks, zero withdrawal. But the question remains — what are you numbing with something else?' },
+  { label: 'LIGHT DRINKER', range: '1-4 DAYS', min: 1, max: 4,
+    mood: 'MOOD DISTRESS', k6: 'K6 SCORE', sleep: 'SLEEP TROUBLE', gm: 'GREY MATTER',
+    moodImg: 'assets/distress/distressCT1.png',
+    k6Img:   'assets/k6/k6CT1.png',
+    sleepImg:'assets/sleep/sleepCT1.jpg',
+    gmImg:   'assets/grey/greyCT1.png',
+    quote: 'Light drinking. Socially invisible. But your brain already registers the pattern. The reward circuit is listening.' },
+  { label: 'MODERATE DRINKER', range: '5-11 DAYS', min: 5, max: 11,
+    mood: 'MOOD DISTRESS', k6: 'K6 SCORE', sleep: 'SLEEP TROUBLE', gm: 'GREY MATTER',
+    moodImg: 'assets/distress/distressCT2.png',
+    k6Img:   'assets/k6/k6CT2.png',
+    sleepImg:'assets/sleep/sleepCT2.png',
+    gmImg:   'assets/grey/greyCT2.png',
+    quote: 'The glass you had yesterday is already reinforcing your craving today. Your neural system has been nudged in that direction. If you quit today, tomorrow you\'ll be less vulnerable.' },
+  { label: 'HEAVY DRINKER', range: '12-19 DAYS', min: 12, max: 19,
+    mood: 'MOOD DISTRESS', k6: 'K6 SCORE', sleep: 'SLEEP TROUBLE', gm: 'GREY MATTER',
+    moodImg: 'assets/distress/distressCT3.png',
+    k6Img:   'assets/k6/k6CT3.png',
+    sleepImg:'assets/sleep/sleepCT3.png',
+    gmImg:   'assets/grey/greyCT3.png',
+    quote: 'More days drinking than not. Withdrawal symptoms are measurable. Your sleep architecture is disrupted. The frontal cortex is losing volume.' },
+  { label: 'VERY HEAVY DRINKER', range: '20-30 DAYS', min: 20, max: 30,
+    mood: 'MOOD DISTRESS', k6: 'K6 SCORE', sleep: 'SLEEP TROUBLE', gm: 'GREY MATTER',
+    moodImg: 'assets/distress/distressCT4.png',
+    k6Img:   'assets/k6/k6CT4.png',
+    sleepImg:'assets/sleep/sleepCT4.png',
+    gmImg:   'assets/grey/greyCT4.png',
+    quote: 'One in five report withdrawal-related sleep trouble. Grey matter volume loss equivalent to 5.5 years of aging. This is not a habit. This is a neurological trajectory.' },
+];
+
+function classifyDays(days) {
+  days = parseInt(days) || 0;
+  if (days <= 0) return 0;
+  if (days <= 4) return 1;
+  if (days <= 11) return 2;
+  if (days <= 19) return 3;
+  return 4;
+}
+
+/* Show form */
+document.getElementById('btn-submit').addEventListener('click', function() {
+  document.getElementById('submit-overlay').classList.remove('off');
+});
+
+document.getElementById('form-close').addEventListener('click', function() {
+  document.getElementById('submit-overlay').classList.add('off');
+});
+
+/* Submit form */
+document.getElementById('form-submit').addEventListener('click', function() {
+  var name = document.getElementById('input-name').value.trim() || 'Anonymous';
+  var days = parseInt(document.getElementById('input-days').value);
+
+  if (isNaN(days) || days < 0 || days > 30) {
+    document.getElementById('input-days').style.borderColor = '#a44';
+    return;
+  }
+
+  var catIdx = classifyDays(days);
+  var cat = DRINK_CATS[catIdx];
+
+  // Save to server
+  fetch('/api/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, days: days, category: cat.label })
+  }).catch(function() { /* silently fail if server unavailable */ });
+
+  // Hide form, show scan animation
+  document.getElementById('submit-overlay').classList.add('off');
+  document.getElementById('scan-overlay').classList.remove('off');
+  hub.classList.add('off');
+
+  // After animation, show results
+  setTimeout(function() {
+    document.getElementById('scan-overlay').classList.add('off');
+    showResults(name, days, catIdx);
+  }, 1800);
+});
+
+function showResults(name, days, catIdx) {
+  var cat = DRINK_CATS[catIdx];
+
+  document.getElementById('res-title').textContent = cat.label;
+  document.getElementById('res-freq').textContent = 'FREQUENCY: ' + days + ' DAYS / 30 DAYS';
+
+  // Images
+  document.getElementById('res-img-mood').src = cat.moodImg;
+  document.getElementById('res-img-k6').src = cat.k6Img;
+  document.getElementById('res-img-sleep').src = cat.sleepImg;
+  // Grey matter: use placeholder if no image
+  var gmImg = document.getElementById('res-img-gm');
+  if (cat.gmImg) { gmImg.src = cat.gmImg; gmImg.style.display = 'block'; }
+  else { gmImg.style.display = 'none'; }
+
+  // Values
+  document.getElementById('res-val-mood').textContent = cat.mood;
+  document.getElementById('res-val-k6').textContent = cat.k6;
+  document.getElementById('res-val-sleep').textContent = cat.sleep;
+  document.getElementById('res-val-gm').textContent = cat.gm;
+
+  // Table
+  var tbl = cat.label.toUpperCase() + '             POSSIBILITY\n';
+  tbl +=    '---------------------------------------------\n';
+  tbl +=    'MOOD DISORDER                ' + cat.mood + '\n';
+  tbl +=    'K6 SCORE                     ' + cat.k6 + '\n';
+  tbl +=    'SLEEP TROUBLE                ' + cat.sleep + '\n';
+  tbl +=    'GREY MATTER                  ' + cat.gm;
+  document.getElementById('res-table').textContent = tbl;
+
+  // Quote
+  document.getElementById('res-quote').textContent = cat.quote;
+
+  // Show
+  document.getElementById('results-view').classList.remove('off');
+}
+
+document.getElementById('res-hub-btn').addEventListener('click', function() {
+  document.getElementById('results-view').classList.add('off');
+  hub.classList.remove('off');
+  currentView = 'hub';
+});

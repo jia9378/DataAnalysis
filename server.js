@@ -2,9 +2,15 @@ const express = require('express');
 const multer  = require('multer');
 const path    = require('path');
 const fs      = require('fs');
+const Datastore = require('nedb');
 
 const app  = express();
 const PORT = 3000;
+
+// ── neDB — user submissions ──────────────────────────────────────────────
+const db = new Datastore({ filename: path.join(__dirname, 'submissions.db'), autoload: true });
+
+app.use(express.json());
 
 // ── Static files ──────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
@@ -72,6 +78,32 @@ app.get('/api/slices', (req, res) => {
   });
 
   res.json({ slices: all, count: all.length });
+});
+
+// ── API: submit user data ────────────────────────────────────────────────
+app.post('/api/submit', (req, res) => {
+  const { name, days, category } = req.body;
+  if (days === undefined || days === null) {
+    return res.status(400).json({ error: 'Missing days field' });
+  }
+  const record = {
+    name: name || 'Anonymous',
+    days: parseInt(days),
+    category: category || 'Unknown',
+    timestamp: new Date().toISOString(),
+  };
+  db.insert(record, (err, doc) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    res.json({ success: true, id: doc._id });
+  });
+});
+
+// ── API: get all submissions ─────────────────────────────────────────────
+app.get('/api/submissions', (req, res) => {
+  db.find({}).sort({ timestamp: -1 }).exec((err, docs) => {
+    if (err) return res.status(500).json({ error: 'Database error' });
+    res.json({ submissions: docs, count: docs.length });
+  });
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────

@@ -223,6 +223,75 @@ PARIETAL CORTEX            −0.04      −0.13     −0.28      −0.49</pre>
     </footer>
   </div>
 
+  <!-- ═══ SUBMIT FORM OVERLAY ═══ -->
+  <div id="submit-overlay" class="off">
+    <div id="submit-form">
+      <button id="form-close">✕</button>
+      <h2>Submit Your Data</h2>
+      <p class="form-intro">Your response is anonymous and stored locally on this server.</p>
+
+      <label for="input-name">Name (or alias)</label>
+      <input type="text" id="input-name" placeholder="e.g. Anonymous" autocomplete="off">
+
+      <label for="input-days">How many days have you had more than 1 standard drink in the past 30 days?</label>
+      <input type="number" id="input-days" min="0" max="30" placeholder="0 – 30">
+
+      <div class="drink-ref">
+        <p class="drink-ref-title">What counts as 1 standard drink:</p>
+        <p>12 oz regular beer (5% alcohol)</p>
+        <p>8–10 oz malt liquor or hard seltzer (7% alcohol)</p>
+        <p>5 oz wine (12% alcohol)</p>
+        <p>1.5 oz distilled spirits — gin, rum, tequila, vodka, whiskey (40% alcohol)</p>
+      </div>
+
+      <button id="form-submit">SCAN</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCAN ANIMATION OVERLAY ═══ -->
+  <div id="scan-overlay" class="off">
+    <div id="scan-anim">
+      <div id="scan-ethanol">
+        <div id="sa-glow"></div>
+        <img src="ethanol.svg" alt="" id="sa-svg">
+      </div>
+      <p id="scan-msg">ANALYSING...</p>
+    </div>
+  </div>
+
+  <!-- ═══ RESULTS VIEW ═══ -->
+  <div id="results-view" class="off">
+    <div id="results-content">
+      <h1 id="res-title"></h1>
+      <p id="res-freq" class="meta"></p>
+
+      <div class="res-scans">
+        <div class="res-scan">
+          <img id="res-img-mood" src="" alt="">
+          <div class="res-val" id="res-val-mood"></div>
+        </div>
+        <div class="res-scan">
+          <img id="res-img-k6" src="" alt="">
+          <div class="res-val" id="res-val-k6"></div>
+        </div>
+        <div class="res-scan">
+          <img id="res-img-sleep" src="" alt="">
+          <div class="res-val" id="res-val-sleep"></div>
+        </div>
+        <div class="res-scan">
+          <img id="res-img-gm" src="" alt="">
+          <div class="res-val" id="res-val-gm"></div>
+        </div>
+      </div>
+
+      <pre id="res-table"></pre>
+
+      <p id="res-quote"></p>
+
+      <button id="res-hub-btn">EXPLORE DATA LAYERS →</button>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="data.js"></script>
 </body>
